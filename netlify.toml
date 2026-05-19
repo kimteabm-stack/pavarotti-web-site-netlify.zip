@@ -1,5 +1,5 @@
 [build]
-  publish = "."
+  publish = "public"
   command = ""
 
 [[headers]]
@@ -7,8 +7,4 @@
   [headers.values]
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
-
-[[redirects]]
-  from = "/"
-  to = "/gojo.html"
-  status = 200
+    Cache-Control = "public, max-age=3600"
