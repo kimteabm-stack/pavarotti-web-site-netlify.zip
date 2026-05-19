@@ -9,7 +9,6 @@
     X-Content-Type-Options = "nosniff"
 
 [[redirects]]
-  from = "/*"
+  from = "/"
   to = "/gojo.html"
   status = 200
-  force = true
