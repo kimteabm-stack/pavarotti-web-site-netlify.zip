@@ -10,5 +10,6 @@
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/gojo.html"
   status = 200
+  force = true
