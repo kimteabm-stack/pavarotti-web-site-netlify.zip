@@ -30,35 +30,24 @@ async function downloadPpt(){
         s.addText('성악가란 무엇일까?',{x:4.2,y:4.15,w:5,h:.35,fontFace:'Malgun Gothic',fontSize:13,color:muted,align:'center',margin:0});
       }else{
         s.addText(title,{x:.72,y:1.08,w:9.6,h:1.25,fontFace:'Malgun Gothic',fontSize:i===0?40:30,bold:true,color:ink,fit:'shrink',margin:0});
-        const usable=body.slice(0,8);
-        usable.forEach((line,j)=>{const y=2.65+j*.52;s.addShape(pptx.ShapeType.rect,{x:.82,y:y+.08,w:.12,h:.12,fill:{color:ink},line:{color:ink}});s.addText(line,{x:1.08,y,w:10.6,h:.34,fontFace:'Malgun Gothic',fontSize:15,color:muted,fit:'shrink',margin:0});});
+        body.slice(0,8).forEach((line,j)=>{const y=2.65+j*.52;s.addShape(pptx.ShapeType.rect,{x:.82,y:y+.08,w:.12,h:.12,fill:{color:ink},line:{color:ink}});s.addText(line,{x:1.08,y,w:10.6,h:.34,fontFace:'Malgun Gothic',fontSize:15,color:muted,fit:'shrink',margin:0});});
       }
       s.addText(`${i+1} / ${slides.length}`,{x:11.55,y:6.92,w:.9,h:.22,fontFace:'Malgun Gothic',fontSize:8,bold:true,color:ink,align:'right',margin:0});
     });
     await pptx.writeFile({fileName:fileSafeName('pptx')});
   }catch(e){console.error(e);alert('PPT 다운로드 중 문제가 생겼습니다. 새로고침 후 다시 눌러주세요.')}finally{setBusy(false)}
 }
-async function captureSlideImage(i){
-  show(i);
-  await new Promise(r=>setTimeout(r,180));
-  document.querySelectorAll('img').forEach(img=>{try{img.crossOrigin='anonymous'}catch(e){}});
-  const canvas=await html2canvas(document.getElementById('slide'),{scale:1.6,backgroundColor:'#f7f7f1',useCORS:true,logging:false});
-  return canvas.toDataURL('image/jpeg',.92);
+function pdfPrintHtml(){
+  const css=['manga.css?v=20260520f','accent.css?v=20260520f'].map(h=>`<link rel="stylesheet" href="${h}">`).join('');
+  const pages=slides.map((s,i)=>`<section class="slide"><div class="inner"><div class="kicker">${s.n?`<span class="num">${s.n}</span>`:''}<span>${s.k}</span></div><div class="content">${s.h}</div><div class="pageNo">${i+1} / ${slides.length}</div><div class="shapeLayer v${i%5}"><span class="shape ring"></span><span class="shape square"></span><span class="shape slab"></span><span class="shape staff"></span><span class="shape note"></span></div></div></section>`).join('');
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>10208 김태범 발표 PDF</title>${css}<style>html,body{overflow:visible!important;background:#f7f7f1}.slide{page-break-after:always;break-after:page}.slide:last-child{page-break-after:auto;break-after:auto}@page{size:landscape;margin:0}.nav,.downloadBar{display:none!important}</style></head><body>${pages}<script>setTimeout(()=>print(),700)<\/script></body></html>`;
 }
-async function downloadPdf(){
-  if(typeof html2canvas==='undefined'||!window.jspdf){alert('PDF 변환 파일을 불러오는 중입니다. 잠시 후 다시 눌러주세요.');return}
-  setBusy(true);
-  const start=index;
-  try{
-    const {jsPDF}=window.jspdf;
-    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    for(let i=0;i<slides.length;i++){
-      if(i>0)pdf.addPage();
-      const img=await captureSlideImage(i);
-      pdf.addImage(img,'JPEG',0,0,297,210);
-    }
-    pdf.save(fileSafeName('pdf'));
-  }catch(e){console.error(e);alert('PDF 다운로드 중 문제가 생겼습니다. 새로고침 후 다시 눌러주세요.')}finally{show(start);setBusy(false)}
+function downloadPdf(){
+  const win=window.open('','_blank');
+  if(!win){alert('팝업이 막혔습니다. 팝업 허용 후 다시 눌러주세요.');return}
+  win.document.open();
+  win.document.write(pdfPrintHtml());
+  win.document.close();
 }
 document.getElementById('downloadPpt')?.addEventListener('click',downloadPpt);
 document.getElementById('downloadPdf')?.addEventListener('click',downloadPdf);
